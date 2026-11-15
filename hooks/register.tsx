@@ -30,6 +30,17 @@ const clean = (text: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
+// Shortest run of whole sentences longer than 12 characters, so a short opener
+// such as "Done, sir." is spoken together with the sentence after it. A sentence
+// counts only once whitespace follows it, so "3." in a streaming "3.1" is not an end.
+const firstLine = (buffer: string) => {
+  const ends = /[.!?](?=\s)/g
+  for (let m = ends.exec(buffer); m; m = ends.exec(buffer)) {
+    if (m.index + 1 > 12) return buffer.slice(0, m.index + 1)
+  }
+  return ''
+}
+
 let isSpeaking = false
 
 function speak($: any, text: string) {
@@ -59,11 +70,16 @@ export const register: Register = on => {
       yield chunk
       if (e.agentId || hasSpoken || chunk.kind !== 'text') continue
       buffer += chunk.text
-      const m = buffer.match(/^[\s\S]*?[.!?](?=\s|$)/)
-      if (m && m[0].length > 12 && (await read($, isOn))) {
+      const line = firstLine(buffer)
+      if (line && (await read($, isOn))) {
         hasSpoken = true
-        speak($, m[0])
+        speak($, line)
       }
+    }
+    // The step ended without a long enough sentence ("Done, sir."): speak what there is.
+    if (!e.agentId && !hasSpoken && /[a-z]{2}/i.test(buffer) && (await read($, isOn))) {
+      hasSpoken = true
+      speak($, buffer)
     }
   })
 
