@@ -1,0 +1,5 @@
+{
+  "name": "jarvis-toggle",
+  "owner": { "name": "anuj1392" },
+  "plugins": [{ "name": "jarvis-toggle", "source": "./" }]
+}

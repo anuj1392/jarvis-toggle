@@ -1,0 +1,1 @@
+{ "name": "jarvis-toggle", "version": "0.1.0", "description": "Arc reactor button that toggles spoken Jarvis replies (Piper) on or off", "license": "MIT", "types": "./types/index.d.ts" }
